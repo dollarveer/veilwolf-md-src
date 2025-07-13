@@ -7,7 +7,7 @@ const PREFIX = s.PREFIX;
 
 // Configurable elements from config.js
 const {
-    BOT: BOT_NAME = 'BWM XMD',
+    BOT: BOT_NAME = 'VEILWOLF XMD',
     BOT_URL: MEDIA_URLS = [],
     MENU_TOP_LEFT = "┌─❖",
     MENU_BOT_NAME_LINE = "│ ",
@@ -19,9 +19,9 @@ const {
     MENU_TIME_LINE = "│⏰ ",
     MENU_STATS_LINE = "│⭐ ",
     MENU_BOTTOM_DIVIDER = "└─────────────┈⳹",
-    FOOTER = `\n\n©Sir Ibrahim Adams\n\n╭━========================\n┃  ᴛᴏ sᴇᴇ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs ᴛᴏɢᴇᴛʜᴇʀ ᴜsᴇ \n┃ *${PREFIX} Cmds*\n┃ *${PREFIX} Help*\n┃ *${PREFIX} list*\n┃ *${PREFIX} Commands* \n╰━========================\n\n*For business use this*\nbusiness.bwmxmd.online\n\n®2025 ʙᴡᴍ xᴍᴅ 🔥`,
-    WEB = 'ibrahimadams.site',
-    GURL = 'whatsapp.com/channel/0029VaZuGSxEawdxZK9CzM0Y'
+    FOOTER = `\n\n©Ai_Vinnie\n\n╭━========================\n┃  ᴛᴏ sᴇᴇ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs ᴛᴏɢᴇᴛʜᴇʀ ᴜsᴇ \n┃ *${PREFIX} Cmds*\n┃ *${PREFIX} Help*\n┃ *${PREFIX} list*\n┃ *${PREFIX} Commands* \n╰━========================\n\n*For business use this*\nbusiness.bwmxmd.online\n\n®2025 ʙᴡᴍ xᴍᴅ 🔥`,
+    WEB = 'veilwolf.site',
+    GURL = 'https://whatsapp.com/channel/0029VbAZSQ0J93wVFOS5rT26'
 } = s;
 
 // Get random media from config (supports both images and videos)
@@ -38,16 +38,16 @@ const getRandomAudio = () => audioFiles[Math.floor(Math.random() * audioFiles.le
 
 // Command categories
 const categories = {
-    "1. 🤖 AI MENU": ["AI", "TTS", "NEWS"],
-    "2. ⚽ SPORTS MENU": ["FOOTBALL", "GAMES"],
-    "3. 📥 DOWNLOAD MENU": ["NEWS", "SEARCH", "IMAGES", "DOWNLOAD"],
-    "4. 🛠️ HEROKU MENU": ["CONTROL", "STICKCMD", "TOOLS"],
-    "5. 💬 CONVERSATION MENU": ["CONVERSION", "LOGO", "MEDIA", "WEEB", "SCREENSHOTS", "IMG", "AUDIO-EDIT", "MPESA"],
-    "6. 😂 FUN MENU": ["HENTAI", "FUN", "REACTION"],
-    "7. 🌍 GENERAL MENU": ["GENERAL", "MODS", "UTILITY", "MEDIA", "TRADE"],
-    "8. 👨‍👨‍👦‍👦 GROUP MENU": ["GROUP"],
-    "9. 💻 BOT_INFO MENU": ["GITHUB", "USER", "PAIR", "NEW"],
-    "10. 🔞 ADULT MENU": ["XVIDEO"]
+    "4. 🤖 AI MENU": ["AI", "TTS", "NEWS"],
+    "5. ⚽ SPORTS MENU": ["FOOTBALL", "GAMES"],
+    "6. 📥 DOWNLOAD MENU": ["NEWS", "SEARCH", "IMAGES", "DOWNLOAD"],
+    "7. 🛠️ HEROKU MENU": ["CONTROL", "STICKCMD", "TOOLS"],
+    "8. 💬 CONVERSATION MENU": ["CONVERSION", "LOGO", "MEDIA", "WEEB", "SCREENSHOTS", "IMG", "AUDIO-EDIT", "MPESA"],
+    "9. 😂 FUN MENU": ["HENTAI", "FUN", "REACTION"],
+    "10. 🌍 GENERAL MENU": ["GENERAL", "MODS", "UTILITY", "MEDIA", "TRADE"],
+    "11. 👨‍👨‍👦‍👦 GROUP MENU": ["GROUP"],
+    "12. 💻 BOT_INFO MENU": ["GITHUB", "USER", "PAIR", "NEW"],
+    "13. 🔞 ADULT MENU": ["XVIDEO"]
 };
 
 // GitHub repo stats
@@ -156,7 +156,7 @@ _Reply with any number above to access that menu section_`;
     // Build menu header using configurable symbols
     const menuHeader = `
 ${MENU_TOP_LEFT}
-${MENU_BOT_NAME_LINE}${BOT_NAME}  😎🤓  
+${MENU_BOT_NAME_LINE}${BOT_NAME}  
 ${MENU_BOTTOM_LEFT}  
 ${MENU_GREETING_LINE}${greeting}
 ${MENU_DIVIDER}  
