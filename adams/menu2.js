@@ -156,7 +156,7 @@ _Reply with any number above to access that menu section_`;
     // Build menu header using configurable symbols
     const menuHeader = `
 ${MENU_TOP_LEFT}
-${MENU_BOT_NAME_LINE}${BOT_NAME}    
+${MENU_BOT_NAME_LINE}${BOT_NAME}  😎🤓  
 ${MENU_BOTTOM_LEFT}  
 ${MENU_GREETING_LINE}${greeting}
 ${MENU_DIVIDER}  
