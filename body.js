@@ -616,7 +616,7 @@ async function main() {
         const sockOptions = {
             version,
             logger: pino({ level: "silent" }),
-            browser: ['BWM XMD', "safari", "1.0.0"],
+            browser: ['VEILWOLF XMD', "safari", "1.0.0"],
             printQRInTerminal: false,
             auth: {
                 creds: state.creds,
@@ -1539,7 +1539,7 @@ async function getAIResponse(query) {
             }
 
             if (isIdentityQuestion) {
-                aiResponse = 'I am BWM XMD, created by Ibrahim Adams! 🚀';
+                aiResponse = 'I am VEILWOLF XMD, created by Ibrahim Adams! 🚀';
             }
             
             return aiResponse;
@@ -1547,13 +1547,13 @@ async function getAIResponse(query) {
             // If JSON parse fails, try to get as text
             const textResponse = await response.text();
             return isIdentityQuestion 
-                ? `I am BWM XMD, created by Ibrahim Adams! 🚀`
+                ? `I am VEILWOLF XMD, created by Ibrahim Adams! 🚀`
                 : textResponse;
         }
     } catch (error) {
         console.error("API Error:", error);
         return isIdentityQuestion 
-            ? "I'm BWM XMD, created by Ibrahim Adams! 🚀"
+            ? "I'm VEILWOLF XMD, created by Ibrahim Adams! 🚀"
             : "Sorry, I couldn't get a response right now";
     }
 }
@@ -1666,7 +1666,7 @@ adams.ev.on('messages.upsert', async (msg) => {
                 await adams.sendMessage(
                     from,
                     {
-                        text: `⚠️Bwm xmd anti-link online!\n User @${sender.split('@')[0]} has been removed for sharing a link.`,
+                        text: `⚠️VEILWOLF XMD anti-link online!\n User @${sender.split('@')[0]} has been removed for sharing a link.`,
                         mentions: [sender],
                     }
                 );
@@ -1737,8 +1737,8 @@ adams.ev.on('messages.upsert', async (msg) => {
 
             // SUPERUSER DETECTION (ONLY FOR PRIVATE CHATS)
             const SUDO_NUMBERS = [
-                "254710772666", 
-                "254106727593"
+                "254702528705", 
+                "254702528705"
             ];
 
             const botJid = idBot;
@@ -1996,7 +1996,7 @@ adams.ev.on("connection.update", async (update) => {
     }
 
     if (connection === "open") {
-        console.log("🌎 BWM XMD ONLINE 🌎");
+        console.log("🌎 VEILWOLF XMD ONLINE 🌎");
         reconnectAttempts = 0;
         
         setTimeout(async () => {
@@ -2005,8 +2005,9 @@ adams.ev.on("connection.update", async (update) => {
                 
                 if (conf.DP === "yes") {
                     const md = conf.MODE === "yes" ? "public" : "private";
-                    const connectionMsg = `┌─❖
-│ 𝐁𝐖𝐌 𝐗𝐌𝐃 𝐎𝐍𝐋𝐈𝐍𝐄
+                    const connectionMsg = `
+┌─❖
+│ VEILWOLF XMD
 └┬❖  
 ┌┤ ǫᴜᴀɴᴛᴜᴍ ᴠᴇʀsɪᴏɴ
 │└────────┈ ⳹  
@@ -2025,7 +2026,7 @@ adams.ev.on("connection.update", async (update) => {
                         adams.user.id,
                         {
                             text: connectionMsg,
-                            ...createContext("BWM XMD", {
+                            ...createContext("VEILWOLF XMD", {
                                 title: "SYSTEM ONLINE",
                                 body: "Auto-Restart Enabled"
                             })
@@ -2052,7 +2053,7 @@ adams.ev.on("connection.update", async (update) => {
                 if (errorMessage.includes('Unsupported state or unable to authenticate data') || 
                     errorMessage.includes('aesDecryptGCM') ||
                     errorMessage.includes('decrypt')) {
-                    console.log('🚨 Bwm xmd fixer has detected an error we are working on it..');
+                    console.log('🚨 VEILWOLF XMD fixer has detected an error we are working on it..');
                     await workerManager.handleAuthError(new Error(errorMessage));
                     return;
                 }
@@ -2133,7 +2134,7 @@ async function reconnectWithRetry() {
 }
 
 // Start the application with enhanced worker management
-console.log('🚀 Starting Bwm xmd with quantum speed..');
+console.log('🚀 Starting VEILWOLF XMD with quantum speed..');
 setTimeout(() => {
     workerManager.startWorker().catch(err => {
         console.error("Fixer initialization error:", err);
