@@ -1071,7 +1071,7 @@ const updatePresence = async (jid) => {
 adams.ev.on("connection.update", ({ connection }) => {
     if (connection === "open") {
         logger.info("Connection established - updating presence");
-        updatePresence("status@broadcast");
+        //updatePresence("status@broadcast");
     }
 });
 
