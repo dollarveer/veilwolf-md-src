@@ -7,7 +7,7 @@ const PREFIX = s.PREFIX;
 
 // Configurable elements from config.js
 const {
-    BOT: BOT_NAME = 'VEILWOLF XMD',
+    BOT: BOT_NAME = 'VEILWOLF_XMD',
     BOT_URL: MEDIA_URLS = [],
     MENU_TOP_LEFT = "┌─❖",
     MENU_BOT_NAME_LINE = "│ ",
@@ -19,7 +19,7 @@ const {
     MENU_TIME_LINE = "│⏰ ",
     MENU_STATS_LINE = "│⭐ ",
     MENU_BOTTOM_DIVIDER = "└─────────────┈⳹",
-    FOOTER = `\n\n©Ai_Vinnie\n\n╭━========================\n┃  ᴛᴏ sᴇᴇ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs ᴛᴏɢᴇᴛʜᴇʀ ᴜsᴇ \n┃ *${PREFIX} Cmds*\n┃ *${PREFIX} Help*\n┃ *${PREFIX} list*\n┃ *${PREFIX} Commands* \n╰━========================\n\n*For business use this*\nbusiness.bwmxmd.online\n\n®2025 ʙᴡᴍ xᴍᴅ 🔥`,
+    FOOTER = `\n\n©Ai_Vinnie\n\n╭━========================\n┃  ᴛᴏ sᴇᴇ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs ᴛᴏɢᴇᴛʜᴇʀ ᴜsᴇ \n┃ *${PREFIX} Cmds*\n┃ *${PREFIX} Help*\n┃ *${PREFIX} list*\n┃ *${PREFIX} Commands* \n╰━========================\n\n*For business use this*\nai_vinnie@veilwolf.site\n\n®2025 VEILWOLF-XMD 🔥`,
     WEB = 'veilwolf.site',
     GURL = 'https://whatsapp.com/channel/0029VbAZSQ0J93wVFOS5rT26'
 } = s;
@@ -47,12 +47,14 @@ const categories = {
     "10. 🌍 GENERAL MENU": ["GENERAL", "MODS", "UTILITY", "MEDIA", "TRADE"],
     "11. 👨‍👨‍👦‍👦 GROUP MENU": ["GROUP"],
     "12. 💻 BOT_INFO MENU": ["GITHUB", "USER", "PAIR", "NEW"],
-    "13. 🔞 ADULT MENU": ["XVIDEO"]
+    "13. 🔞 ADULT MENU": ["XVIDEO"],
+    "500. ♾️ ALL COMMANDS": ["EVERYTHING"]
 };
 
 // GitHub repo stats
 const fetchGitHubStats = async () => {
     try {
+        /*
         const owner = "ibrahimadams254";
         const repo = "BWM-XMD-QUANTUM";
         const response = await axios.get(`https://api.github.com/repos/${owner}/${repo}`, {
@@ -62,6 +64,9 @@ const fetchGitHubStats = async () => {
         });
         const forks = response.data.forks_count || 0;
         const stars = response.data.stargazers_count || 0;
+        */
+        const forks = 157;
+        const stars = 357;
         return (forks * 2) + (stars * 2);
     } catch (error) {
         console.error("Error fetching GitHub stats:", error.message);
@@ -150,6 +155,8 @@ adams({ nomCom: "menu", categorie: "General" }, async (dest, zk, commandeOptions
 *12.* 💻 BOT_INFO MENU
 
 *13.* 🔞 ADULT MENU
+
+*500.* ♾️ ALL COMMANDS
 
 _Reply with any number above to access that menu section_`;
 
@@ -284,6 +291,33 @@ ${MENU_BOTTOM_DIVIDER}`;
                         }
                     }
                     break;
+
+                case 500:
+                    // Grouped full command menu
+                    let menuText = `📜 *ALL ${BOT_NAME} COMMANDS*\n\n`;
+
+                    Object.keys(categories).forEach(categoryName => {
+                        const catKeys = categories[categoryName] || [];
+                        let groupCommands = [];
+
+                        catKeys.forEach(key => {
+                            if (commandList[key]) {
+                               groupCommands = groupCommands.concat(commandList[key]);
+                            }
+                        });
+
+                        if (groupCommands.length > 0) {
+                            menuText += `📦 *${categoryName.toUpperCase()}*\n${groupCommands.join('\n')}\n\n`;
+                        }
+                    });
+
+                    menuText += FOOTER;
+
+                    await zk.sendMessage(dest, {
+                        text: menuText.trim(),
+                        contextInfo: contextInfo
+                    }, { quoted: message });
+                break;
 
                 default:
                     await zk.sendMessage(dest, {
