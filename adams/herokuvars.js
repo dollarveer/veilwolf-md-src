@@ -731,31 +731,6 @@ autoFeatures.forEach(feature => {
     });
 });
 
-// Command to restart the bot using the local endpoint
-adams({
-  nomCom: 'update',
-  categorie: "Control"
-}, async (chatId, zk, context) => {
-  const { repondre, superUser } = context;
-
-  if (!superUser) {
-    return repondre("🚫 *Access Denied!* This command is restricted to the bot owner.");
-  }
-
-  try {
-    // Send restart request to local endpoint
-    const response = await fetch('http://localhost:' + (process.env.PORT || 3000) + '/restart');
-    await zk.sendMessage(chatId, {
-      text: "✅ *Bot restart initiated!*\n\n🔄 *Please wait a moment while the bot restarts...*"
-    });
-  } catch (error) {
-    console.error("Error restarting bot:", error);
-    await zk.sendMessage(chatId, {
-      text: "⚠️ *Failed to restart bot!*\n\nError: " + error.message
-    });
-  }
-});
-
 adams({
   nomCom: 'restart',
   categorie: "Control"
