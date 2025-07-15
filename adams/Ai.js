@@ -100,7 +100,7 @@ const aiCommands = [
         aliases: ["zoroai"],
         url: "https://bk9.fun/ai/BK93?BK9=you%20are%20zoro%20from%20one%20piece&q=",
         categorie: "AI",
-        reaction: "⚔️",
+        reaction: "🔥",
         description: "Zoro-themed AI"
     },
     {
