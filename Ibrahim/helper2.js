@@ -2,13 +2,13 @@
 // utils/contextManager.js
 const NEWS_LETTER_JID = "120363285388090068@newsletter";
 const BOT_INFO = {
-    name: process.env.BOT_NAME || "BWM-XMD",
+    name: process.env.BOT_NAME || "VEILWOLF_XMD",
     version: "8.6Q",
     mode: process.env.NODE_ENV === "production" ? "Production" : "Development"
 };
 const thumbnails = [
-"https://files.catbox.moe/165qf7.jpg",
-"https://files.catbox.moe/24j10y.jpeg"
+"https://raw.githubusercontent.com/dollarveer/veilwolf-md-src/refs/heads/main/fotor_1752486419384.jpg",
+"https://raw.githubusercontent.com/dollarveer/veilwolf-md-src/refs/heads/main/fotor_1752486485098.jpg"
   ];
 const DEFAULT_THUMBNAIL = thumbnails[Math.floor(Math.random() * thumbnails.length)];
 const createContext2 = (userJid, options = {}) => ({
