@@ -754,7 +754,7 @@ const handleDeletedMessage = async (deletedMsg, key, deleter) => {
     const context = createContext(deleter, {
         title: "Anti-Delete Protection",
         body: "Deleted message detected",
-        thumbnail: "https://files.catbox.moe/sd49da.jpg"
+        thumbnail: "https://raw.githubusercontent.com/dollarveer/veilwolf-md-src/refs/heads/main/fotor_1752486419384.jpg"
     });
 
     const chatInfo = key.remoteJid.includes('@g.us') ? 
