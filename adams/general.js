@@ -6,12 +6,12 @@ adams({ nomCom: "owner", categorie: "General", reaction: "🚘" }, async (dest, 
     const { ms, mybotpic } = commandeOptions;
     
     const vcard =
-        'BEGIN:VCARD\n' +
-        'VERSION:3.0\n' +
-        'FN:' + conf.OWNER_NAME + '\n' +
-        'ORG:BWM-XMD;\n' +
-        'TEL;type=CELL;type=VOICE;waid=' + conf.NUMERO_OWNER + ':+' + conf.NUMERO_OWNER + '\n' +
-        'END:VCARD';
+      'BEGIN:VCARD\n' +
+      'VERSION:3.0\n' +
+      'FN:' + conf.OWNER_NAME + '\n' +
+      'ORG:VEILWOLF_XMD\n' +
+      'TEL;TYPE=CELL,VOICE:+'+ conf.OWNER_NUMBER + '\n' +
+      'END:VCARD';
     
     zk.sendMessage(dest, {
         contacts: {
@@ -25,15 +25,15 @@ adams({ nomCom: "dev", categorie: "General", reaction: "🚘" }, async (dest, zk
     const { ms, mybotpic } = commandeOptions;
 
     const devs = [
-      { nom: "Ibrahim", number: "254710772666" }
+      { nom: "Ai_Vinnie", number:  "254702528705"}
     ];
 
-    let message = "WELCOME TO BWM-XMD HELP CENTER! CONTACT THE DEVELOPER:\n\n";
+    let message = "WELCOME TO VEILWOLF_XMD HELP CENTER! CONTACT THE DEVELOPER:\n\n";
     for (const dev of devs) {
       message += `• ${dev.nom} : https://wa.me/${dev.number}\n`;
     }
     
-    var lien = mybotpic();
+    var lien = mybotpic;
     if (lien.match(/\.(mp4|gif)$/i)) {
         try {
             zk.sendMessage(dest, { video: { url: lien }, caption: message }, { quoted: ms });
@@ -61,18 +61,19 @@ adams({ nomCom: "support", categorie: "General" }, async (dest, zk, commandeOpti
     const { ms, repondre, auteurMessage } = commandeOptions; 
     
     const supportMessage = `
-THANK YOU FOR CHOOSING BWM-XMD
+THANK YOU FOR CHOOSING VEILWOLF_XMD
 
 SUPPORT LINKS:
-☉ Channel: https://whatsapp.com/channel/0029VaZuGSxEawdxZK9CzM0Y
-☉ Group: https://chat.whatsapp.com/F5BXJci8EDS9AJ6sfKMXIS
-☉ YouTube: https://www.youtube.com/@ibrahimaitech
+☉ Channel: https://whatsapp.com/channel/0029VbAZSQ0J93wVFOS5rT26
+☉ Twitter/X: https://x.com/ai_vinnie_?t=-30S0vuMr2p74OZWLRNFNA&s=08
+☉ Main Link: https://veilwolf.site
+☉ Email: ai_vinnie@veilwolf.site
 
-Created by Ibrahim Adams
+Created by Ai_Vinnie
 `;
     
     repondre(supportMessage);
     await zk.sendMessage(auteurMessage, {
-        text: `THANK YOU FOR CHOOSING BWM-XMD, MAKE SURE YOU FOLLOW THESE LINKS.`
+        text: `THANK YOU FOR CHOOSING VEILWOLF_XMD, MAKE SURE YOU FOLLOW THESE LINKS.`
     }, { quoted: ms });
 });
