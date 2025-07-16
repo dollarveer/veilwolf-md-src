@@ -152,7 +152,7 @@ adams({ nomCom: "menu", categorie: "General" }, async (dest, zk, commandeOptions
 ╚═══════════════════════════════╝
 
 Reply with a number to activate a module.`;
-
+    
     // Build menu header using configurable symbols
     const menuHeader = `
 ${MENU_TOP_LEFT}
