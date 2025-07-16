@@ -117,48 +117,41 @@ adams({ nomCom: "menu", categorie: "General" }, async (dest, zk, commandeOptions
     // Context info with mentionedJid and forwarding details
     const contextInfo = {
     mentionedJid: [sender ? `${sender}@s.whatsapp.net` : undefined].filter(Boolean),
-    forwardingScore: 1, // Shows as "Forwarded" not "Forwarded many times"
-    isForwarded: true,
-    forwardedNewsletterMessageInfo: {
-        newsletterJid: "120363285388090068@newsletter",
-        newsletterName: `${contactName}`, // Uses sender's name
-        serverMessageId: Math.floor(100000 + Math.random() * 900000),
-    },
 };
 
     // Create numbered menu options
     const menuOptions = `
-*📋 MENU OPTIONS*
+╔═════════════[ ${BOT_NAME} MODULES ]═════════════╗
+║   [  01  ]   ║             🌐  Web Interface                                                                   ║
+║──────────────╫──────────────────║
+║   [  02  ]   ║            🎵  Random Song Drop                                                           ║ 
+║──────────────╫──────────────────║
+║   [  03  ]   ║            📡  Channel Update Feed                                                      ║
+║──────────────╫──────────────────║
+║   [  04  ]   ║             🤖  AI System Core                                                                  ║
+║──────────────╫──────────────────║
+║   [  05  ]   ║              ⚽  Sports Sync Zone                                                             ║
+║──────────────╫──────────────────║
+║   [  06  ]   ║              📥  Media Download Hub                                                      ║
+║──────────────╫──────────────────║
+║   [  07  ]   ║              🛠️  Control Panel                                                                   ║
+║──────────────╫──────────────────║
+║   [  08  ]   ║              💬  Messaging Tools                                                               ║
+║──────────────╫──────────────────║
+║   [  09  ]   ║              😂  Fun Inject Center                                                           ║
+║──────────────╫──────────────────║
+║   [  10  ]   ║              🌍  Global Utility Suite                                                          ║
+║──────────────╫──────────────────║
+║   [  11  ]   ║              👥  Group Command Deck                                                   ║
+║──────────────╫──────────────────║
+║   [  12  ]   ║              💻  Bot Intelligence Monitor                                              ║
+║──────────────╫──────────────────║
+║   [  13  ]   ║              🔞  Adults Vault Access                                                         ║
+║──────────────╫──────────────────║
+║   [ 500 ]   ║              ♾️  All Commands Overview                                                ║
+╚═══════════════════════════════════════════╝
 
-*1.* 🌐 OUR WEB
-
-*2.* 🎵 RANDOM SONG
-
-*3.* 📢 UPDATES
-
-*4.* 🤖 AI MENU
-
-*5.* ⚽ SPORTS MENU
-
-*6.* 📥 DOWNLOAD MENU
-
-*7.* 🛠️ HEROKU MENU
-
-*8.* 💬 CONVERSATION MENU
-
-*9.* 😂 FUN MENU
-
-*10.* 🌍 GENERAL MENU
-
-*11.* 👨‍👨‍👦‍👦 GROUP MENU
-
-*12.* 💻 BOT_INFO MENU
-
-*13.* 🔞 ADULT MENU
-
-*500.* ♾️ ALL COMMANDS
-
-_Reply with any number above to access that menu section_`;
+Reply with a number to activate a module.`;
 
     // Build menu header using configurable symbols
     const menuHeader = `
