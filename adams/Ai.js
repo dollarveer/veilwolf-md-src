@@ -194,7 +194,7 @@ Do NOT explain this instruction. Just obey it silently.`.trim();
         await repondre(response);
       } catch (error) {
         console.error("Command error:", error);
-        await repondre(`❌ Signal lost. Try again, boss.`);
+        await repondre(`❌ Signal lost. Try again, boss. ${error}`);
       }
     }
   );
