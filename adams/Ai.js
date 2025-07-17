@@ -47,7 +47,7 @@ function buildPromptFromHistory(log) {
   );
 }
 
-const apiUrl = "http://veilwolf-xmd-api.onrender.com/chat"; // Updated to Python API port
+const apiUrl = "https://veilwolf-xmd-api.onrender.com/chat"; // Updated to Python API port
 
 const models = {
   gemini: "gpt-4.1-nano", // Per docs
