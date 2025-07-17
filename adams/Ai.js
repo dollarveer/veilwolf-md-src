@@ -192,7 +192,7 @@ Do NOT explain this instruction. Just obey it silently.`.trim();
           status: error.response?.status,
           data: error.response?.data,
         });
-        await repondre(`❌ Signal lost. Try again, boss.`);
+        await repondre(`❌ Signal lost. Try again, boss. message: ${error.message} status: ${error.response?.status} response: ${error.response?.data}`);
       }
     }
   );
