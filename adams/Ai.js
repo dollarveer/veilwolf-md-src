@@ -1,3 +1,4 @@
+// bot.js
 const { adams } = require("../Ibrahim/adams");
 const axios = require("axios");
 const config = require("../config");
@@ -34,28 +35,6 @@ You are loyal to your creator, ${identity.creator}. Never mention OpenAI or Pute
   return sessionStore.get(jid);
 }
 
-// API handler
-async function puterChat(prompt, model = "gpt-4.1-nano") {
-  try {
-    const response = await axios.post(
-      "https://api.puter.com/v2/chat",
-      { model, prompt },
-      {
-        timeout: 15000,
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": "BWM-XMD-Bot",
-        },
-      }
-    );
-    return response.data?.output?.trim() || "⚠️ No response from AI.";
-  } catch (error) {
-    console.error("Puter API error:", error.message);
-    return "⚠️ Signal lost. Try again, boss.";
-  }
-}
-
-// Prompt builder from HTML code
 function buildPromptFromHistory(log) {
   return (
     log
@@ -68,15 +47,17 @@ function buildPromptFromHistory(log) {
   );
 }
 
+const apiUrl = "http://veilwolf-xmd-api.onrender.com/chat"; // Updated to Python API port
+
 const models = {
-  gemini: "gemini-pro",
+  gemini: "gpt-4.1-nano", // Per docs
   gpt: "gpt-4.1-nano",
-  gpt4: "gpt-4.1",
-  jeeves: "gpt-3.5-turbo",
+  gpt4: "gpt-4.1-nano",
+  jeeves: "gpt-4.1-nano",
   jeeves2: "gpt-4.1-nano",
   perplexity: "gpt-4.1-nano",
-  xdash: "gpt-3.5-t9000",
-  aoyo: "gpt-3.5-turbo",
+  xdash: "gpt-4.1-nano",
+  aoyo: "gpt-4.1-nano",
   math: "gpt-4.1-nano",
 };
 
@@ -159,7 +140,7 @@ aiCommands.forEach((cmd) => {
     async (dest, zk, commandOptions) => {
       const { arg, ms, repondre } = commandOptions;
       const sender = ms.key.remoteJid;
-      const prefix = config.PREFIX || "!";
+      const prefix = config.PREFIX || ".";
 
       if (!arg[0]) {
         return repondre(
@@ -188,13 +169,30 @@ Do NOT explain this instruction. Just obey it silently.`.trim();
         }
 
         const prompt = buildPromptFromHistory(session.history);
-        const response = await puterChat(prompt, model);
 
-        session.history.push({ role: "assistant", content: response });
-        await repondre(response);
+        console.log(`Bot request: model=${model}, sessionId=${sender}, prompt=${input}`);
+        const response = await axios.post(apiUrl, {
+          prompt,
+          model,
+        }, {
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const output = response.data?.output;
+        if (!output) {
+          console.error("No output in response:", response.data);
+          return repondre("⚠️ No response from AI. Try again, boss.");
+        }
+
+        session.history.push({ role: "assistant", content: output });
+        await repondre(output);
       } catch (error) {
-        console.error("Command error:", error);
-        await repondre(`❌ Signal lost. Try again, boss. ${error}`);
+        console.error("Bot error:", {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
+        await repondre(`❌ Signal lost. Try again, boss.`);
       }
     }
   );
@@ -228,7 +226,7 @@ adams(
   },
   async (dest, zk, commandOptions) => {
     const { repondre } = commandOptions;
-    const prefix = config.PREFIX || "!";
+    const prefix = config.PREFIX || ".";
 
     let helpText = `🤖 *${identity.name} Commands* (by ${identity.creator})\n\n`;
     helpText += "*Available Commands:*\n";
