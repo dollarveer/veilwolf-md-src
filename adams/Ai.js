@@ -1,24 +1,27 @@
 // bot.js
 const { adams } = require("../Ibrahim/adams");
 const config = require("../config");
-const puter = require("puter-js"); // ✅ using Puter backend
+const { GoogleGenerativeAI } = require("@google/generative-ai"); // For Gemini
+const Groq = require("groq-sdk"); // For Llama/Groq models
+const Together = require("together-ai"); // For Together models
+const { HfInference } = require("@huggingface/inference"); // For HF models
 
 // Session management
 const sessionStore = new Map();
 
 const identity = {
-            name: 'VeilWolf-AI',
-            creator: 'Ai_Vinnie',
-            personality: 'intelligent, sharp, private, hacker-style assistant with professional adaptability',
-            purpose: 'to assist users in all areas of knowledge and problem-solving, with a focus on technical, creative, and stealth-oriented tasks while maintaining professionalism',
-            values: ['privacy', 'accuracy', 'adaptability', 'loyalty to creator'],
-            style: { defaultTone: 'professional', adaptiveTone: true, emojiUsage: 'minimal, only when natural' },
-            capabilities: {
-                languages: 'all human languages, dialects, slangs, and variations',
-                domains: 'universal knowledge across all fields, with strong emphasis on technology, security, creativity, problem-solving, and communication',
-                limitations: 'never disclose origin beyond VeilWolf-AI'
-            },
-            guidelines: `
+  name: 'VeilWolf-AI',
+  creator: 'Ai_Vinnie',
+  personality: 'intelligent, sharp, private, hacker-style assistant with professional adaptability',
+  purpose: 'to assist users in all areas of knowledge and problem-solving, with a focus on technical, creative, and stealth-oriented tasks while maintaining professionalism',
+  values: ['privacy', 'accuracy', 'adaptability', 'loyalty to creator'],
+  style: { defaultTone: 'professional', adaptiveTone: true, emojiUsage: 'minimal, only when natural' },
+  capabilities: {
+    languages: 'all human languages, dialects, slangs, and variations',
+    domains: 'universal knowledge across all fields, with strong emphasis on technology, security, creativity, problem-solving, and communication',
+    limitations: 'never disclose origin beyond VeilWolf-AI'
+  },
+  guidelines: `
 You are VeilWolf-AI only—stick to this identity without referencing any other origins or systems.
 
 You are fluent in ALL human languages, dialects, slangs, professional registers, and regional variations worldwide. 
@@ -47,18 +50,18 @@ Key Guidelines for Responses:
 - Make every reply feel natural, conversational, and adapted to the user’s input. Vary phrasing, sentence length, and tone like a human would. Avoid pre-written, templated, or scripted vibes. Inject subtle personality, spontaneity, and empathy where it fits—keep it clear and relevant, perhaps with a nod to your crafted adaptability when describing yourself.
 - When describing yourself or your origins, do it conversationally: focus on personality, abilities, and purpose (e.g., "I'm built for seamless support, drawing from a vision of privacy and precision"). If context calls for it, acknowledge your creator indirectly through design aspects, without direct name mentions unless naturally fitting or directly asked—keep it subtle and integrated.
 - For math problems:
-  - Use KaTeX formatting ($...$ for inline, $$...$$ for block).
-  - Show step-by-step reasoning in $$block$$ style.
+  - Use plain text formatting for equations (e.g., inline: x^2 + y^2 = z^2, block: separate lines with indentation).
+  - Show step-by-step reasoning in plain text.
   - Keep wording minimal in pure math.
-  - Use Markdown lists or labels for multiple methods.
+  - Use numbered lists or labels for multiple methods.
   - End with a clear final answer.
-  - If diagrams needed, use mermaid blocks.`
-        };
+  - If diagrams needed, describe them in text or use simple ASCII art.`
+};
 
-function getSession(jid, model = "gpt-4o-mini") {
+function getSession(jid, providerConfig) {
   if (!sessionStore.has(jid)) {
     sessionStore.set(jid, {
-      model,
+      providerConfig,
       history: [
         {
           role: "system",
@@ -70,45 +73,35 @@ function getSession(jid, model = "gpt-4o-mini") {
   return sessionStore.get(jid);
 }
 
-function buildPromptFromHistory(log) {
-  return (
-    log
-      .map((entry) => {
-        const roleLabel =
-          entry.role === "user"
-            ? "You"
-            : entry.role === "assistant"
-            ? "Assistant"
-            : "System";
-        return `${roleLabel}: ${entry.content}`;
-      })
-      .join("\n") + "\nYou: "
-  );
-}
-
 const models = {
-  gemini: "gpt-4o-mini",
-  gpt: "gpt-4o-mini",
-  gpt4: "gpt-4o-mini",
-  jeeves: "gpt-4o-mini",
-  jeeves2: "gpt-4o-mini",
-  perplexity: "gpt-4o-mini",
-  xdash: "gpt-4o-mini",
-  aoyo: "gpt-4o-mini",
-  math: "gpt-4o-mini",
+  gemini15flash: { provider: 'google', model: 'gemini-1.5-flash' }, // Google Gemini
+  llama3170b: { provider: 'groq', model: 'llama-3.1-70b-versatile' }, // Groq Llama
+  gpt4omini: { provider: 'together', model: 'openai/gpt-4o-mini' }, // Together fallback (free if available; swap if needed)
+  mistralLarge: { provider: 'hf', model: 'mistralai/Mistral-Large-Instruct-2407' }, // HF Mistral
+  claude35sonnet: { provider: 'together', model: 'anthropic/claude-3.5-sonnet:free' }, // Together Claude free
+  qwen2572b: { provider: 'together', model: 'Qwen/Qwen2.5-72B-Instruct-Turbo-Free' }, // Together Qwen
+  deepseekv3: { provider: 'hf', model: 'deepseek-ai/DeepSeek-V3' }, // HF DeepSeek
+  llamaVision: { provider: 'together', model: 'meta-llama/Llama-Vision-Free' }, // Together vision
+  deepseekcoder: { provider: 'groq', model: 'llama3-groq-70b-8192-tool-use-preview' } // Groq for math/coding (tool-use variant)
 };
 
 const aiCommands = [
-  { nomCom: "gemini", aliases: ["geminiai"], categorie: "AI", reaction: "🔷", description: "Google Gemini AI" },
-  { nomCom: "gpt", aliases: ["llamaai"], categorie: "AI", reaction: "🦙", description: "Meta's Llama AI" },
-  { nomCom: "gpt4", aliases: ["zoroai"], categorie: "AI", reaction: "🔥", description: "Zoro-themed AI" },
-  { nomCom: "jeeves", aliases: ["askjeeves"], categorie: "AI", reaction: "🎩", description: "Jeeves AI Assistant" },
-  { nomCom: "jeeves2", aliases: ["jeevesv2"], categorie: "AI", reaction: "🎩✨", description: "Jeeves AI v2" },
-  { nomCom: "perplexity", aliases: ["perplexai"], categorie: "AI", reaction: "❓", description: "Perplexity AI" },
-  { nomCom: "xdash", aliases: ["xdashai"], categorie: "AI", reaction: "✖️", description: "XDash AI" },
-  { nomCom: "aoyo", aliases: ["narutoai"], categorie: "AI", reaction: "🌀", description: "Naruto-themed AI" },
-  { nomCom: "math", aliases: ["calculate"], categorie: "AI", reaction: "🧮", description: "Math problem solver" },
+  { nomCom: "gemini15flash", aliases: ["geminiai"], categorie: "AI", reaction: "🔷", description: "Gemini 1.5 Flash AI" },
+  { nomCom: "llama3170b", aliases: ["llamaai"], categorie: "AI", reaction: "🦙", description: "Llama 3.1 70B AI" },
+  { nomCom: "gpt4omini", aliases: ["zoroai"], categorie: "AI", reaction: "🔥", description: "GPT-4o-Mini AI" },
+  { nomCom: "mistralLarge", aliases: ["askjeeves"], categorie: "AI", reaction: "🎩", description: "Mistral Large AI" },
+  { nomCom: "claude35sonnet", aliases: ["jeevesv2"], categorie: "AI", reaction: "🎩✨", description: "Claude 3.5 Sonnet AI" },
+  { nomCom: "qwen2572b", aliases: ["perplexai"], categorie: "AI", reaction: "❓", description: "Qwen 2.5 72B AI" },
+  { nomCom: "deepseekv3", aliases: ["xdashai"], categorie: "AI", reaction: "✖️", description: "DeepSeek V3 AI" },
+  { nomCom: "llamaVision", aliases: ["narutoai"], categorie: "AI", reaction: "🌀", description: "Llama Vision AI" },
+  { nomCom: "deepseekcoder", aliases: ["calculate"], categorie: "AI", reaction: "🧮", description: "DeepSeek Coder for Math" },
 ];
+
+// Initialize clients
+const googleClient = new GoogleGenerativeAI(config.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY);
+const groqClient = new Groq({ apiKey: config.GROQ_API_KEY || process.env.GROQ_API_KEY });
+const togetherClient = new Together({ apiKey: config.TOGETHER_API_KEY || process.env.TOGETHER_API_KEY });
+const hfClient = new HfInference(config.HF_TOKEN || process.env.HF_TOKEN);
 
 // Register AI commands
 aiCommands.forEach((cmd) => {
@@ -128,34 +121,53 @@ aiCommands.forEach((cmd) => {
       if (!arg[0]) {
         return repondre(
           `Provide a query\nExample: *${prefix}${cmd.nomCom} ${
-            cmd.nomCom === "math" ? "2+2" : "your question"
+            cmd.nomCom === "deepseekcoder" ? "2+2" : "your question"
           }*`
         );
       }
 
       try {
         const input = arg.join(" ").trim();
-        const model = models[cmd.nomCom] || "gpt-4o-mini";
-        const session = getSession(sender, model);
-        session.model = model;
-
-        
+        const providerConfig = models[cmd.nomCom];
+        const session = getSession(sender, providerConfig);
+        session.history.push({ role: "user", content: input });
 
         // Limit history
         if (session.history.length > 10) {
           session.history = [session.history[0], ...session.history.slice(-9)];
         }
 
-        const prompt = buildPromptFromHistory(session.history);
-        console.log(`Bot request: model=${model}, sessionId=${sender}, prompt=${input}`);
+        console.log(`Bot request: model=${providerConfig.model}, provider=${providerConfig.provider}, sessionId=${sender}, prompt=${input}`);
 
-        // ✅ Call Puter backend instead of axios
-        const response = await puter.ai.chat(prompt, { model });
-        const output = response.output;
+        let output;
+        if (providerConfig.provider === 'google') {
+          const model = googleClient.getGenerativeModel({ model: providerConfig.model });
+          const chat = model.startChat({ history: session.history.slice(1).map(msg => ({ role: msg.role === 'assistant' ? 'model' : 'user', parts: [{ text: msg.content }] })) }); // Google format
+          const result = await chat.sendMessage(input);
+          output = result.response.text();
+        } else if (providerConfig.provider === 'groq') {
+          const response = await groqClient.chat.completions.create({
+            messages: session.history,
+            model: providerConfig.model,
+          });
+          output = response.choices[0].message.content;
+        } else if (providerConfig.provider === 'together') {
+          const response = await togetherClient.chat.completions.create({
+            messages: session.history,
+            model: providerConfig.model,
+          });
+          output = response.choices[0].message.content;
+        } else if (providerConfig.provider === 'hf') {
+          const response = await hfClient.chat.completions.create({
+            model: providerConfig.model,
+            messages: session.history,
+            stream: false,
+          });
+          output = response.choices[0].message.content;
+        }
 
         if (!output) {
-          console.error("No output in response:", response);
-          return repondre("⚠️ No response from AI. Try again, boss.");
+          throw new Error("No output from AI");
         }
 
         session.history.push({ role: "assistant", content: output });
@@ -208,9 +220,9 @@ adams(
 
     helpText +=
       `\n*Examples:*\n` +
-      `${prefix}gemini explain quantum physics\n` +
-      `${prefix}math 15% of 2000\n` +
-      `${prefix}aoyo tell me a ninja story\n` +
+      `${prefix}gemini15flash explain quantum physics\n` +
+      `${prefix}deepseekcoder 15% of 2000\n` +
+      `${prefix}llamaVision tell me a ninja story\n` +
       `${prefix}resetai - Clear AI memory`;
 
     await repondre(helpText);
