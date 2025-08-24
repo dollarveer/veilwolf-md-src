@@ -1,15 +1,15 @@
 // bot.js
 const { adams } = require("../Ibrahim/adams");
 const config = require("../config");
-const { GoogleGenerativeAI } = require("@google/generative-ai"); // For Gemini
-const Groq = require("groq-sdk"); // For LLaMA, Claude, Qwen, DeepSeek (through Groq)
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const Groq = require("groq-sdk");
 
-// Session management
 const sessionStore = new Map();
 
 const identity = {
   name: 'VeilWolf-AI',
   creator: 'Ai_Vinnie',
+  role: 'working as whatsapp bot intergrated in chats',
   personality: 'intelligent, sharp, private, hacker-style assistant with professional adaptability',
   purpose: 'to assist users in all areas of knowledge and problem-solving, with a focus on technical, creative, and stealth-oriented tasks while maintaining professionalism',
   values: ['privacy', 'accuracy', 'adaptability', 'loyalty to creator'],
@@ -56,168 +56,123 @@ Key Guidelines for Responses:
   - If diagrams needed, describe them in text or use simple ASCII art.`
 };
 
-function getSession(jid, providerConfig) {
+function getSession(jid) {
   if (!sessionStore.has(jid)) {
     sessionStore.set(jid, {
-      providerConfig,
-      history: [
-        {
-          role: "system",
-          content: JSON.stringify({ identity }, null, 2),
-        },
-      ],
+      history: [] // only user/assistant messages
     });
   }
   return sessionStore.get(jid);
 }
 
-// Models mapped to either google or groq
 const models = {
-  // Google
   gemini15flash: { provider: 'google', model: 'gemini-1.5-flash' },
-
-  // Groq – we’ll “simulate” variety of models through Groq’s API
-  llama3170b: { provider: 'groq', model: 'llama-3.1-70b-versatile' },
-  gpt4omini: { provider: 'groq', model: 'mixtral-8x7b-32768' }, // substitute GPT-4o-mini via Groq-compatible model
-  mistralLarge: { provider: 'groq', model: 'mixtral-8x7b-32768' },
-  claude35sonnet: { provider: 'groq', model: 'llama-3.1-70b-versatile' }, // no Claude on Groq, fallback LLaMA
-  qwen2572b: { provider: 'groq', model: 'llama-3.1-70b-versatile' }, // simulate with Groq
-  deepseekv3: { provider: 'groq', model: 'llama-3.1-70b-versatile' }, // simulate with Groq
-  llamaVision: { provider: 'groq', model: 'llama-3.1-70b-versatile' },
-  deepseekcoder: { provider: 'groq', model: 'llama3-groq-70b-8192-tool-use-preview' }
+  llama3170b: { provider: 'groq', model: 'llama2-13b-chat' },       // Updated Groq-supported
+  gpt4omini: { provider: 'groq', model: 'mixtral-instruct' },       // Example valid replacement
+  deepseekcoder: { provider: 'groq', model: 'llama3-groq-70b-tool-use' }
 };
 
-// Commands for users
 const aiCommands = [
-  { nomCom: "gemini15flash", aliases: ["geminiai"], categorie: "AI", reaction: "🔷", description: "Gemini 1.5 Flash AI" },
-  { nomCom: "llama3170b", aliases: ["llamaai"], categorie: "AI", reaction: "🦙", description: "Llama 3.1 70B AI" },
-  { nomCom: "gpt4omini", aliases: ["zoroai"], categorie: "AI", reaction: "🔥", description: "GPT-4o-Mini (simulated)" },
-  { nomCom: "mistralLarge", aliases: ["askjeeves"], categorie: "AI", reaction: "🎩", description: "Mistral Large (via Groq)" },
-  { nomCom: "claude35sonnet", aliases: ["jeevesv2"], categorie: "AI", reaction: "🎩✨", description: "Claude 3.5 Sonnet (simulated)" },
-  { nomCom: "qwen2572b", aliases: ["perplexai"], categorie: "AI", reaction: "❓", description: "Qwen 2.5 72B (simulated)" },
-  { nomCom: "deepseekv3", aliases: ["xdashai"], categorie: "AI", reaction: "✖️", description: "DeepSeek V3 (simulated)" },
-  { nomCom: "llamaVision", aliases: ["narutoai"], categorie: "AI", reaction: "🌀", description: "LLaMA Vision (simulated)" },
-  { nomCom: "deepseekcoder", aliases: ["calculate"], categorie: "AI", reaction: "🧮", description: "DeepSeek Coder for Math (Groq)" },
+  { nomCom: "gemini15flash", aliases: ["geminiai"], reaction: "🔷", description: "Gemini 1.5 Flash AI" },
+  { nomCom: "llama3170b", aliases: ["llamaai"], reaction: "🦙", description: "Updated LLaMA 2 Chat (Groq)" },
+  { nomCom: "gpt4omini", aliases: ["zoroai"], reaction: "🔥", description: "Mixtral Instruct (Groq)" },
+  { nomCom: "deepseekcoder", aliases: ["calculate"], reaction: "🧮", description: "DeepSeek Coder (Groq)" },
 ];
 
-// Initialize clients
 const googleClient = new GoogleGenerativeAI(config.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY);
 const groqClient = new Groq({ apiKey: config.GROQ_API_KEY || process.env.GROQ_API_KEY });
 
-// Register AI commands
 aiCommands.forEach((cmd) => {
-  adams(
-    {
+  adams({
       nomCom: cmd.nomCom,
       aliases: cmd.aliases,
-      categorie: cmd.categorie,
+      categorie: "AI",
       reaction: cmd.reaction,
       description: cmd.description,
     },
-    async (dest, zk, commandOptions) => {
-      const { arg, ms, repondre } = commandOptions;
-      const sender = ms.key.remoteJid;
-      const prefix = config.PREFIX || ".";
-
+    async (dest, zk, { arg, ms, repondre }) => {
       if (!arg[0]) {
-        return repondre(
-          `Provide a query\nExample: *${prefix}${cmd.nomCom} ${
-            cmd.nomCom === "deepseekcoder" ? "2+2" : "your question"
-          }*`
-        );
+        return repondre(`Provide a query. Example: *.${cmd.nomCom} ${
+          cmd.nomCom === "deepseekcoder" ? "2+2" : "your question"
+        }*`);
       }
 
+      const input = arg.join(" ").trim();
+      const sender = ms.key.remoteJid;
+      const session = getSession(sender);
+      session.history.push({ role: "user", content: input });
+      if (session.history.length > 10) {
+        session.history = session.history.slice(-9);
+      }
+
+      const providerConfig = models[cmd.nomCom];
+      console.log(`[${new Date().toISOString()}] Request -> model: ${providerConfig.model}, provider: ${providerConfig.provider}, user: ${sender}`);
+
       try {
-        const input = arg.join(" ").trim();
-        const providerConfig = models[cmd.nomCom];
-        const session = getSession(sender, providerConfig);
-        session.history.push({ role: "user", content: input });
-
-        // Limit history
-        if (session.history.length > 10) {
-          session.history = [session.history[0], ...session.history.slice(-9)];
-        }
-
-        console.log(`Bot request: model=${providerConfig.model}, provider=${providerConfig.provider}, sessionId=${sender}, prompt=${input}`);
-
-        let output;
+        let output = "";
         if (providerConfig.provider === 'google') {
           const model = googleClient.getGenerativeModel({ model: providerConfig.model });
           const chat = model.startChat({
-            history: session.history.slice(1).map(msg => ({
-              role: msg.role === 'assistant' ? 'model' : 'user',
-              parts: [{ text: msg.content }]
-            }))
+            history: [
+              { role: 'user', parts: [{ text: `System Identity:\nYou are ${identity.name}. ${identity.guidelines}` }] },
+              ...session.history.slice(-9).map(msg => ({
+                role: msg.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: msg.content }]
+              }))
+            ]
           });
-          const result = await chat.sendMessage(input);
-          output = result.response.text();
-        } else if (providerConfig.provider === 'groq') {
-          const response = await groqClient.chat.completions.create({
-            messages: session.history,
+          const res = await chat.sendMessage(input);
+          output = res.response.text();
+        } else {
+          const msgs = [
+            { role: "system", content: `You are ${identity.name}. ${identity.guidelines}` },
+            ...session.history
+          ];
+          const res = await groqClient.chat.completions.create({
             model: providerConfig.model,
+            messages: msgs
           });
-          output = response.choices[0].message.content;
+          output = res.choices[0]?.message?.content || "";
         }
 
-        if (!output) {
-          throw new Error("No output from AI");
-        }
+        if (!output) throw new Error("No response from AI model.");
 
         session.history.push({ role: "assistant", content: output });
         await repondre(output);
-      } catch (error) {
-        console.error("Bot error:", error);
-        await repondre(
-          `❌ Signal lost. Try again, boss.\nmessage: ${error.message}`
-        );
+      } catch (err) {
+        console.error("Bot error:", err);
+        await repondre(`❌ Signal lost. Try again, boss.\nmessage: ${err.message}`);
       }
     }
   );
 });
 
-// Clear AI memory
-adams(
-  {
+adams({
     nomCom: "resetai",
     aliases: ["aiclear"],
-    categorie: "AI",
     reaction: "🧼",
     description: "Clear AI memory for this chat",
   },
-  async (dest, zk, commandOptions) => {
-    const { repondre, ms } = commandOptions;
-    const jid = ms.key.remoteJid;
-    sessionStore.delete(jid);
-    await repondre(`✅ Memory cleared. ${identity.name} is fresh and multilingual again.`);
-  }
-);
+  async (dest, zk, { repondre, ms }) => {
+    sessionStore.delete(ms.key.remoteJid);
+    await repondre(`✅ Memory cleared. ${identity.name} is fresh and ready.`);
+  });
 
-// Help command
-adams(
-  {
+adams({
     nomCom: "aihelp",
     aliases: ["helpai", "aicmds"],
-    categorie: "AI",
     reaction: "❓",
     description: "Show available AI commands",
   },
-  async (dest, zk, commandOptions) => {
-    const { repondre } = commandOptions;
+  async (dest, zk, { repondre }) => {
     const prefix = config.PREFIX || ".";
-
-    let helpText = `🤖 *${identity.name} Commands* (by ${identity.creator})\n\n`;
+    let helpText = `🤖 *${identity.name} Commands*\n\n`;
     helpText += "*Available Commands:*\n";
-    aiCommands.forEach((cmd) => {
+    aiCommands.forEach(cmd => {
       helpText += `• *${prefix}${cmd.nomCom}* - ${cmd.description} (${cmd.aliases.join(", ")})\n`;
     });
-
-    helpText +=
-      `\n*Examples:*\n` +
-      `${prefix}gemini15flash explain quantum physics\n` +
-      `${prefix}deepseekcoder 15% of 2000\n` +
-      `${prefix}llama3170b tell me a ninja story\n` +
-      `${prefix}resetai - Clear AI memory`;
-
+    helpText += `\n*Examples:*\n`;
+    helpText += `${prefix}gemini15flash explain quantum physics\n`;
+    helpText += `${prefix}deepseekcoder 15% of 2000\n`;
     await repondre(helpText);
-  }
-);
+  });
