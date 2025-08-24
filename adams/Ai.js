@@ -2,9 +2,7 @@
 const { adams } = require("../Ibrahim/adams");
 const config = require("../config");
 const { GoogleGenerativeAI } = require("@google/generative-ai"); // For Gemini
-const Groq = require("groq-sdk"); // For Llama/Groq models
-const Together = require("together-ai"); // For Together models
-const { HfInference } = require("@huggingface/inference"); // For HF models
+const Groq = require("groq-sdk"); // For LLaMA, Claude, Qwen, DeepSeek (through Groq)
 
 // Session management
 const sessionStore = new Map();
@@ -73,35 +71,38 @@ function getSession(jid, providerConfig) {
   return sessionStore.get(jid);
 }
 
+// Models mapped to either google or groq
 const models = {
-  gemini15flash: { provider: 'google', model: 'gemini-1.5-flash' }, // Google Gemini
-  llama3170b: { provider: 'groq', model: 'llama-3.1-70b-versatile' }, // Groq Llama
-  gpt4omini: { provider: 'together', model: 'openai/gpt-4o-mini' }, // Together fallback (free if available; swap if needed)
-  mistralLarge: { provider: 'hf', model: 'mistralai/Mistral-Large-Instruct-2407' }, // HF Mistral
-  claude35sonnet: { provider: 'together', model: 'anthropic/claude-3.5-sonnet:free' }, // Together Claude free
-  qwen2572b: { provider: 'together', model: 'Qwen/Qwen2.5-72B-Instruct-Turbo-Free' }, // Together Qwen
-  deepseekv3: { provider: 'hf', model: 'deepseek-ai/DeepSeek-V3' }, // HF DeepSeek
-  llamaVision: { provider: 'together', model: 'meta-llama/Llama-Vision-Free' }, // Together vision
-  deepseekcoder: { provider: 'groq', model: 'llama3-groq-70b-8192-tool-use-preview' } // Groq for math/coding (tool-use variant)
+  // Google
+  gemini15flash: { provider: 'google', model: 'gemini-1.5-flash' },
+
+  // Groq – we’ll “simulate” variety of models through Groq’s API
+  llama3170b: { provider: 'groq', model: 'llama-3.1-70b-versatile' },
+  gpt4omini: { provider: 'groq', model: 'mixtral-8x7b-32768' }, // substitute GPT-4o-mini via Groq-compatible model
+  mistralLarge: { provider: 'groq', model: 'mixtral-8x7b-32768' },
+  claude35sonnet: { provider: 'groq', model: 'llama-3.1-70b-versatile' }, // no Claude on Groq, fallback LLaMA
+  qwen2572b: { provider: 'groq', model: 'llama-3.1-70b-versatile' }, // simulate with Groq
+  deepseekv3: { provider: 'groq', model: 'llama-3.1-70b-versatile' }, // simulate with Groq
+  llamaVision: { provider: 'groq', model: 'llama-3.1-70b-versatile' },
+  deepseekcoder: { provider: 'groq', model: 'llama3-groq-70b-8192-tool-use-preview' }
 };
 
+// Commands for users
 const aiCommands = [
   { nomCom: "gemini15flash", aliases: ["geminiai"], categorie: "AI", reaction: "🔷", description: "Gemini 1.5 Flash AI" },
   { nomCom: "llama3170b", aliases: ["llamaai"], categorie: "AI", reaction: "🦙", description: "Llama 3.1 70B AI" },
-  { nomCom: "gpt4omini", aliases: ["zoroai"], categorie: "AI", reaction: "🔥", description: "GPT-4o-Mini AI" },
-  { nomCom: "mistralLarge", aliases: ["askjeeves"], categorie: "AI", reaction: "🎩", description: "Mistral Large AI" },
-  { nomCom: "claude35sonnet", aliases: ["jeevesv2"], categorie: "AI", reaction: "🎩✨", description: "Claude 3.5 Sonnet AI" },
-  { nomCom: "qwen2572b", aliases: ["perplexai"], categorie: "AI", reaction: "❓", description: "Qwen 2.5 72B AI" },
-  { nomCom: "deepseekv3", aliases: ["xdashai"], categorie: "AI", reaction: "✖️", description: "DeepSeek V3 AI" },
-  { nomCom: "llamaVision", aliases: ["narutoai"], categorie: "AI", reaction: "🌀", description: "Llama Vision AI" },
-  { nomCom: "deepseekcoder", aliases: ["calculate"], categorie: "AI", reaction: "🧮", description: "DeepSeek Coder for Math" },
+  { nomCom: "gpt4omini", aliases: ["zoroai"], categorie: "AI", reaction: "🔥", description: "GPT-4o-Mini (simulated)" },
+  { nomCom: "mistralLarge", aliases: ["askjeeves"], categorie: "AI", reaction: "🎩", description: "Mistral Large (via Groq)" },
+  { nomCom: "claude35sonnet", aliases: ["jeevesv2"], categorie: "AI", reaction: "🎩✨", description: "Claude 3.5 Sonnet (simulated)" },
+  { nomCom: "qwen2572b", aliases: ["perplexai"], categorie: "AI", reaction: "❓", description: "Qwen 2.5 72B (simulated)" },
+  { nomCom: "deepseekv3", aliases: ["xdashai"], categorie: "AI", reaction: "✖️", description: "DeepSeek V3 (simulated)" },
+  { nomCom: "llamaVision", aliases: ["narutoai"], categorie: "AI", reaction: "🌀", description: "LLaMA Vision (simulated)" },
+  { nomCom: "deepseekcoder", aliases: ["calculate"], categorie: "AI", reaction: "🧮", description: "DeepSeek Coder for Math (Groq)" },
 ];
 
 // Initialize clients
 const googleClient = new GoogleGenerativeAI(config.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY);
 const groqClient = new Groq({ apiKey: config.GROQ_API_KEY || process.env.GROQ_API_KEY });
-const togetherClient = new Together({ apiKey: config.TOGETHER_API_KEY || process.env.TOGETHER_API_KEY });
-const hfClient = new HfInference(config.HF_TOKEN || process.env.HF_TOKEN);
 
 // Register AI commands
 aiCommands.forEach((cmd) => {
@@ -142,26 +143,18 @@ aiCommands.forEach((cmd) => {
         let output;
         if (providerConfig.provider === 'google') {
           const model = googleClient.getGenerativeModel({ model: providerConfig.model });
-          const chat = model.startChat({ history: session.history.slice(1).map(msg => ({ role: msg.role === 'assistant' ? 'model' : 'user', parts: [{ text: msg.content }] })) }); // Google format
+          const chat = model.startChat({
+            history: session.history.slice(1).map(msg => ({
+              role: msg.role === 'assistant' ? 'model' : 'user',
+              parts: [{ text: msg.content }]
+            }))
+          });
           const result = await chat.sendMessage(input);
           output = result.response.text();
         } else if (providerConfig.provider === 'groq') {
           const response = await groqClient.chat.completions.create({
             messages: session.history,
             model: providerConfig.model,
-          });
-          output = response.choices[0].message.content;
-        } else if (providerConfig.provider === 'together') {
-          const response = await togetherClient.chat.completions.create({
-            messages: session.history,
-            model: providerConfig.model,
-          });
-          output = response.choices[0].message.content;
-        } else if (providerConfig.provider === 'hf') {
-          const response = await hfClient.chat.completions.create({
-            model: providerConfig.model,
-            messages: session.history,
-            stream: false,
           });
           output = response.choices[0].message.content;
         }
@@ -222,7 +215,7 @@ adams(
       `\n*Examples:*\n` +
       `${prefix}gemini15flash explain quantum physics\n` +
       `${prefix}deepseekcoder 15% of 2000\n` +
-      `${prefix}llamaVision tell me a ninja story\n` +
+      `${prefix}llama3170b tell me a ninja story\n` +
       `${prefix}resetai - Clear AI memory`;
 
     await repondre(helpText);
